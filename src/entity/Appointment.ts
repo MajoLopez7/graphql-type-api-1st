@@ -1,7 +1,7 @@
 import { Customer } from './Customer';
 import { Doctor } from './Doctor';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, BaseEntity,ManyToMany,JoinTable, OneToOne, JoinColumn } from "typeorm";
-import { Field, Int, ObjectType } from "type-graphql";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, BaseEntity,ManyToMany,JoinTable, ManyToOne } from "typeorm";
+import { Field, ObjectType } from "type-graphql";
 import { Supplies } from './Supplies';
 import { Procedure } from './Procedure';
 import { Diseases } from './Diseases';
@@ -9,57 +9,69 @@ import { Diseases } from './Diseases';
 @ObjectType()
 @Entity()
 export class Appointment extends BaseEntity{
+  @Field()
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    @Field()
-    @PrimaryGeneratedColumn()
-    id!: number;
+  @Column()
+  customerId!: number;
 
-    @OneToOne(() => Customer)
-    @JoinColumn()
-    customer!: Customer;
+  @Field()
+  @ManyToOne(() => Customer, customer => customer.appointments)
+  customer!: Customer;
 
-    @OneToOne(() => Doctor)
-    @JoinColumn()
-    doctor!: Doctor;
+  @Column()
+  doctorId!: number;
 
-    @OneToOne(() => Doctor)
-    @JoinColumn()
-    assistantDoctor!: Doctor;
+  @Field()
+  @ManyToOne(() => Doctor, doctor => doctor.appointments)
+  doctor!: Doctor;
 
-    @Field(() => String)
-    @Column()
-    phone!: String;
+  @Column()
+  assistantDoctorId!: number;
 
-    //fecha de la consulta 
-    // (Se actualizan= Insumos, enfermedad, procedimiento y posible DR asistente)
-    @Field(() => String)
-    @CreateDateColumn({type:'timestamp'})
-    appointmentDate!: String
+  @Field()
+  @ManyToOne(() => Doctor, doctor => doctor.appointments)
+  assistantDoctor!: Doctor;
 
-   //fecha de creaacion de la consulta 
-    @Field(() => String)
-    @CreateDateColumn({type:'timestamp'})
-    createdAt!: String
+  @Field(() => String)
+  @Column()
+  phone!: String;
 
-    //enfermedad
-  //  @Field(() => [Diseases])
-  //  @Column()
-    @ManyToMany(() => Diseases)
-    @JoinTable()
-    diseases!: Diseases[];
+  //fecha de la consulta 
+  // (Se actualizan= Insumos, enfermedad, procedimiento y posible DR asistente)
+  @Field(() => String)
+  @CreateDateColumn({type:'timestamp'})
+  appointmentDate!: string
 
-    //nombre del procedimiento que se realizo
-    //@Field(() => [Procedure])
-  //  @Column()
-    @ManyToMany(() => Procedure)
-    @JoinTable()
-    procedure!: Procedure[];
+ //fecha de creaacion de la consulta 
+  @Field(() => String)
+  @CreateDateColumn({type:'timestamp'})
+  createdAt!: string
 
-    //lista de insumos utilizados en la consulta
-   // @Field(() => [Supplies])
-    //@Column()
-    @ManyToMany(() => Supplies)
-    @JoinTable()
-    supplies!: Supplies[];
+  //enfermedad
+//  @Field(() => [Diseases])
+//  @Column()
+
+  @Field(() => [Diseases])
+  @ManyToMany(() => Diseases)
+  @JoinTable()
+  diseases!: Diseases[];
+
+  //nombre del procedimiento que se realizo
+  //@Field(() => [Procedure])
+//  @Column()
+  @Field(() => [Procedure])
+  @ManyToMany(() => Procedure)
+  @JoinTable()
+  procedure!: Procedure[];
+
+  //lista de insumos utilizados en la consulta
+ // @Field(() => [Supplies])
+  //@Column()
+  @Field(() => [Supplies])
+  @ManyToMany(() => Supplies)
+  @JoinTable()
+  supplies!: Supplies[];
     
 }

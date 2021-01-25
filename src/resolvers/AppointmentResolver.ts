@@ -1,5 +1,3 @@
-import { Doctor } from './../entity/Doctor';
-import { Customer } from './../entity/Customer';
 import { Appointment } from './../entity/Appointment';
 import { Resolver, Query, Mutation, Arg, Field, InputType, Int } from 'type-graphql';
 import { Supplies } from '../entity/Supplies';
@@ -8,31 +6,26 @@ import { Diseases } from '../entity/Diseases';
 
 @InputType()
 class AppointmentInput{
-
-    @Field(() => Customer)
-    customer!: Customer
-
-    @Field(() => Doctor)
-    doctor!: Doctor
-
-    @Field(() => Doctor)
-    assistantDoctor!: Doctor
+    @Field()
+    customerId!: number;
 
     @Field()
-    phone!: string
+    doctorId!: number;
 
     @Field()
-    appointmentDate!: String
+    assistantDoctorId!: number;
 
-    @Field( () => [Diseases])
-    diseases!: Diseases[];
+    @Field()
+    phone!: string;
 
-    @Field(() => [Procedure])
-   procedure!: Procedure[];
+    @Field(() => [Int])
+    diseasesIds!: number[];
 
-    @Field(() => [Supplies])
-    supplies!: Supplies[];
+    @Field(() => [Int])
+    procedureIds!: number[];
 
+    @Field(() => [Int])
+    suppliesIds!: number[];
 }
 @InputType()
 class AppointmentInputUpdate{
@@ -48,7 +41,15 @@ export class AppointmentResolver{
     async createAppointment(
       @Arg("variables", () => AppointmentInput) variables: AppointmentInput
       ){
-        const newAppointment = Appointment.create(variables)
+        const diseases = await Diseases.findByIds(variables.diseasesIds);
+        const procedure = await Procedure.findByIds(variables.procedureIds);
+        const supplies = await Supplies.findByIds(variables.suppliesIds);
+        const newAppointment = Appointment.create({
+            ...variables,
+            diseases,
+            procedure,
+            supplies
+        });
         return await newAppointment.save()
       }
   
@@ -71,6 +72,6 @@ export class AppointmentResolver{
       
       @Query(() => [Appointment])
       async AppointmentList(){
-          return await Appointment.find()
+        return await Appointment.find({relations: ['customer', 'doctor', 'assistantDoctor', 'diseases', 'procedure', 'supplies']});
       }
 }
